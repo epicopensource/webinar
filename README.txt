@@ -15,13 +15,14 @@ more details.
 
 You should have received a copy of the GNU General Public License along with
 this program.  If not, see <http://www.gnu.org/licenses/>.
------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------
 
 Description
------------------
+------------
 
-The webinar activity module enables web conferencing between Moodle and Adobe Connect to 
-be added as an activity to any course, and includes the following functionality:
+The webinar activity module enables web conferencing between Moodle and Adobe Connect 
+to be added as an activity to any course, and includes the following functionality:
 
 * Add/edit/delete session
 * Assign a host to a session - based on 'teacher' role type
@@ -29,28 +30,31 @@ be added as an activity to any course, and includes the following functionality:
 * Unregister for session / unassign students from a session
 * Automated email notifications to registered students
 * Join session
-* View / Record webinar
+* View / record webinar
 * Run attendance report
 
 Requirements
---------------------
+-------------
 
-* Moodle 2.1
-* All users attending session will be required to have Flash Player 10.1 or higher, with the ability to install Adobe Connect Add-Ins in order to share their screen.
+* Moodle 2.2
+* All users attending session will be required to have Flash Player 10.1 or higher, 
+with the ability to install Adobe Connect Add-Ins in order to share their screen.
 
 Installation
-----------------
+-------------
 
 1- Unpack the module into your moodle install in order to create a
    mod/webinar directory.
 
 2- Visit the /admin/index.php page to trigger the database installation.
 
-3- (Optional) Change the default options in the activity modules
-   configuration.
+3- (Optional) Change the default options in the activity modules configuration.
+
+4- (Optional) Assign roles of teacher or non-editing teacher to one or more users to be able 
+to assign them as webinar hosts.
 
 Bugs/patches
---------------------
+--------------
 
 Feel free to send bug reports (and/or patches!) to the current maintainer:
 

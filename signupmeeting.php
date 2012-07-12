@@ -38,8 +38,8 @@ function signup_meeting($webinar, $session_info, $user) {
 	}
 	else {
 		//User email address is not registered yet with Adobe Connect - add them and get back the principal ID
-		$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . $user->firstname . "&last-name=" . $user->lastname . "&login=" . $user->email . 
-			"&password=test&type=user&send-email=false&has-children=0&email=" . $user->email . "&session=" . $session;
+		$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . str_replace(' ', '%20', $user->firstname) . "&last-name=" . str_replace(' ', '%20', $user->lastname) . "&login=" . $user->email . 
+			"&password=" . $webinar->adminpassword . "&type=user&send-email=false&has-children=0&email=" . $user->email . "&session=" . $session;
 		$xmlstr = file_get_contents($url);
 		$xml = new SimpleXMLElement($xmlstr);
 

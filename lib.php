@@ -27,16 +27,16 @@ define('WEBINAR_CANCEL_TEXT',		10);	// Send just a plan email 8+2
 define('WEBINAR_CANCEL_ICAL',		9);	    // Send just a combined text/ical message 8+1
 
 // Name of the custom field where the manager's email address is stored
-define('MDL_MANAGERSEMAIL_FIELD', 'managersemail');
+define('WEBINAR_MANAGERSEMAIL_FIELD', 'managersemail');
 
 // Custom field related constants
-define('CUSTOMFIELD_DELIMITTER', ';');
-define('CUSTOMFIELD_TYPE_TEXT',        0);
-define('CUSTOMFIELD_TYPE_SELECT',      1);
-define('CUSTOMFIELD_TYPE_MULTISELECT', 2);
+define('WEBINAR_CUSTOMFIELD_DELIMITTER', ';');
+define('WEBINAR_CUSTOMFIELD_TYPE_TEXT',        0);
+define('WEBINAR_CUSTOMFIELD_TYPE_SELECT',      1);
+define('WEBINAR_CUSTOMFIELD_TYPE_MULTISELECT', 2);
 
 // Calendar-related constants
-define('CALENDAR_MAX_NAME_LENGTH', 15);
+define('WEBINAR_CALENDAR_MAX_NAME_LENGTH', 15);
 
 // Signup status codes (remember to update $WEBINAR_STATUS)
 define('WEBINAR_STATUS_USER_CANCELLED',     10);
@@ -2105,7 +2105,7 @@ function webinar_check_signup($webinarid) {
 function webinar_get_manageremail($userid) {
 	global $DB;
 	
-    $fieldid = $DB->get_field('user_info_field', 'id', array('shortname' => MDL_MANAGERSEMAIL_FIELD));
+    $fieldid = $DB->get_field('user_info_field', 'id', array('shortname' => WEBINAR_MANAGERSEMAIL_FIELD));
     if ($fieldid) {
         return $DB->get_field('user_info_data', 'data', array('userid' => $userid, 'fieldid' => $fieldid));
     }
@@ -2158,7 +2158,7 @@ function webinar_set_manageremail($manageremail) {
 
     //begin_sql();
 
-    if (!$fieldid = $DB->get_field('user_info_field', 'id', array('shortname' => MDL_MANAGERSEMAIL_FIELD))) {
+    if (!$fieldid = $DB->get_field('user_info_field', 'id', array('shortname' => WEBINAR_MANAGERSEMAIL_FIELD))) {
         // Create the custom field
 
         $categoryname = clean_param(get_string('modulename', 'webinar'), PARAM_TEXT);
@@ -2177,7 +2177,7 @@ function webinar_set_manageremail($manageremail) {
         $record = new stdclass();
         $record->datatype = 'text';
         $record->categoryid = $categoryid;
-        $record->shortname = MDL_MANAGERSEMAIL_FIELD;
+        $record->shortname = WEBINAR_MANAGERSEMAIL_FIELD;
         $record->name = clean_param(get_string('manageremail', 'webinar'), PARAM_TEXT);
 
         if (!$fieldid = $DB->insert_record('user_info_field', $record)) {
@@ -3111,7 +3111,7 @@ function webinar_add_session_to_site_calendar($session, $webinar)
 
     $shortname = $webinar->shortname;
     if (empty($shortname)) {
-        $shortname = substr($webinar->name, 0, CALENDAR_MAX_NAME_LENGTH);
+        $shortname = substr($webinar->name, 0, WEBINAR_CALENDAR_MAX_NAME_LENGTH);
     }
 
     $description = '';
@@ -3296,8 +3296,8 @@ function webinar_print_session($session, $showcapacity, $calendaroutput=false, $
     foreach ($customfields as $field) {
         $data = '';
         if (!empty($customdata[$field->id])) {
-            if (CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
-                $values = explode(CUSTOMFIELD_DELIMITTER, $customdata[$field->id]->data);
+            if (WEBINAR_CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
+                $values = explode(WEBINAR_CUSTOMFIELD_DELIMITTER, $customdata[$field->id]->data);
                 $data = implode(', ', $values);
             }
             else {
@@ -3422,7 +3422,7 @@ function webinar_save_customfield_value($fieldid, $data, $otherid, $table)
 	
     $dbdata = null;
     if (is_array($data)) {
-        $dbdata = trim(implode(CUSTOMFIELD_DELIMITTER, $data), ';');
+        $dbdata = trim(implode(WEBINAR_CUSTOMFIELD_DELIMITTER, $data), ';');
     }
     else {
         $dbdata = trim($data);
@@ -3466,8 +3466,8 @@ function webinar_get_customfield_value($field, $otherid, $table)
 	
     if ($record = $DB->get_record("webinar_{$table}_data", array('fieldid' => $field->id, "{$table}id" => $otherid))) {
         if (!empty($record->data)) {
-            if (CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
-                return explode(CUSTOMFIELD_DELIMITTER, $record->data);
+            if (WEBINAR_CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
+                return explode(WEBINAR_CUSTOMFIELD_DELIMITTER, $record->data);
             }
             return $record->data;
         }
@@ -3761,7 +3761,7 @@ function webinar_add_customfields_to_form(&$mform, $customfields, $alloptional=f
         if (!$field->required) {
             $options[''] = get_string('none');
         }
-        foreach (explode(CUSTOMFIELD_DELIMITTER, $field->possiblevalues) as $value) {
+        foreach (explode(WEBINAR_CUSTOMFIELD_DELIMITTER, $field->possiblevalues) as $value) {
             $v = trim($value);
             if (!empty($v)) {
                 $options[$v] = $v;
@@ -3769,13 +3769,13 @@ function webinar_add_customfields_to_form(&$mform, $customfields, $alloptional=f
         }
 
         switch ($field->type) {
-        case CUSTOMFIELD_TYPE_TEXT:
+        case WEBINAR_CUSTOMFIELD_TYPE_TEXT:
             $mform->addElement('text', $fieldname, $field->name);
             break;
-        case CUSTOMFIELD_TYPE_SELECT:
+        case WEBINAR_CUSTOMFIELD_TYPE_SELECT:
             $mform->addElement('select', $fieldname, $field->name, $options);
             break;
-        case CUSTOMFIELD_TYPE_MULTISELECT:
+        case WEBINAR_CUSTOMFIELD_TYPE_MULTISELECT:
             $select = &$mform->addElement('select', $fieldname, $field->name, $options);
             $select->setMultiple(true);
             break;

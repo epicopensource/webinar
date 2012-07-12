@@ -120,24 +120,4 @@
       </KEYS>
     </TABLE>
   </TABLES>
-  <STATEMENTS>
-    <STATEMENT NAME="insert log_display" TYPE="insert" TABLE="log_display" COMMENT="Initial insert of records on table log_display">
-      <SENTENCES>
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'add', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'delete', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'update', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'view', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'view all', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'add session', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'copy session', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'delete session', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'update session', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'view session', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'view attendees', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'take attendance', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'signup', 'webinar', 'name')" />
-        <SENTENCE TEXT="(module, action, mtable, field) VALUES ('webinar', 'cancel', 'webinar', 'name')" />
-      </SENTENCES>
-    </STATEMENT>
-  </STATEMENTS>
 </XMLDB>

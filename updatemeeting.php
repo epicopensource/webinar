@@ -41,7 +41,6 @@ function update_meeting($webinar, $session_info, $date, $presenter_details) {
 	$xml = new SimpleXMLElement($xmlstr);
 
 	if ($xml->{'principal-list'}->principal) {
-	
 		//Presenter email address has been matched on Adobe Connect - get back their principal ID
 		foreach($xml->{'principal-list'}->principal->attributes() as $key => $val) {
 			if($key == 'principal-id') {
@@ -51,8 +50,9 @@ function update_meeting($webinar, $session_info, $date, $presenter_details) {
 	}
 	else {
 		//Presenter email address is not registered yet with Adobe Connect - add them and get back the principal ID
-		$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . $presenter_details->firstname . "&last-name=" . $presenter_details->lastname . "&login=" . $presenter_details->email . 
-			"&password=test&type=user&send-email=false&has-children=0&email=" . $presenter_details->email . "&session=" . $session;
+		$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . str_replace(' ', '%20', $presenter_details->firstname) . "&last-name=" . str_replace(' ', '%20', $presenter_details->lastname) . "&login=" . $presenter_details->email . 
+			"&password=" . $webinar->adminpassword . "&type=user&send-email=false&has-children=0&email=" . $presenter_details->email . "&session=" . $session;
+
 		$xmlstr = file_get_contents($url);
 		$xml = new SimpleXMLElement($xmlstr);
 
@@ -65,7 +65,13 @@ function update_meeting($webinar, $session_info, $date, $presenter_details) {
 	
 	//take the presenter user's principal ID and assign them as presenter of the session
 	$url = $webinar->sitexmlapiurl . "?action=permissions-update&principal-id=" . $principal_id . "&acl-id=" . $scoid . "&permission-id=host&session=" . $session;
+	
+	//echo "|".$url;
+
 	$xmlstr = file_get_contents($url);
 	$xml = new SimpleXMLElement($xmlstr);
+	
+	//print_r($xml);
+	//exit();
 
 }

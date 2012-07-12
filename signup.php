@@ -41,6 +41,7 @@ $navigation = build_navigation($navlinks);
 // Guests can't signup for a session, so offer them a choice of logging in or going back.
 if (isguestuser()) {
     $loginurl = $CFG->wwwroot.'/login/index.php';
+	
     if (!empty($CFG->loginhttps)) {
         $loginurl = str_replace('http:','https:', $loginurl);
     }

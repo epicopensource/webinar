@@ -5,6 +5,7 @@
 function create_meeting($webinar, $fromform, $date, $presenter_details) {
 
 	//Step 1 - get session value
+
 	$url = $webinar->sitexmlapiurl . "?action=common-info";
 	$xmlstr = file_get_contents($url);
 	$xml = new SimpleXMLElement($xmlstr);
@@ -89,8 +90,8 @@ function create_meeting($webinar, $fromform, $date, $presenter_details) {
 	}
 	else {
 		//Presenter email address is not registered yet with Adobe Connect - add them and get back the principal ID
-		$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . $presenter_details->firstname . "&last-name=" . $presenter_details->lastname . "&login=" . $presenter_details->email . 
-			"&password=test&type=user&send-email=false&has-children=0&email=" . $presenter_details->email . "&session=" . $session;
+		$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . str_replace(' ', '%20', $presenter_details->firstname) . "&last-name=" . str_replace(' ', '%20', $presenter_details->lastname) . "&login=" . $presenter_details->email . 
+			"&password=" . $webinar->adminpassword . "&type=user&send-email=false&has-children=0&email=" . $presenter_details->email . "&session=" . $session;
 		$xmlstr = file_get_contents($url);
 		$xml = new SimpleXMLElement($xmlstr);
 

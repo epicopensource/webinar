@@ -24,9 +24,9 @@ class mod_webinar_session_form extends moodleform {
         $customfields = $this->_customdata['customfields'];
         webinar_add_customfields_to_form($mform, $customfields);
 
-		//Build dropdown of users from which a presenter for the session will be selected - populate with users who have been assigned a presenter role
-		//'Presenter' role takes Moodle users who have been assigned as 'teachers' - (non-editing)
-		
+		//Build dropdown of users from which a presenter for the session will be selected
+		//Populate with users who have been assigned a host/presenter role
+		//Host/Presenter role takes Moodle users who have been assigned a teacher or non-editing teacher role
 		$presenters = $DB->get_records_sql("SELECT
                         u.id,
                         u.firstname,
@@ -36,7 +36,7 @@ class mod_webinar_session_form extends moodleform {
 						{$CFG->prefix}role r, 
                         {$CFG->prefix}role_assignments ra
                     WHERE 
-						r.archetype = 'teacher' 
+						(r.archetype = 'teacher' OR r.archetype = 'editingteacher')
 					AND
 						ra.roleid = r.id
 					AND
@@ -44,7 +44,7 @@ class mod_webinar_session_form extends moodleform {
 					ORDER BY u.firstname ASC, u.lastname ASC");
 				
 		$presenters_select = array();		
-		$presenters_select[] = "Select a webinar host...";		
+		$presenters_select[] = get_string('selecthost', 'webinar'); 		
 				
 		if($presenters) {
 			foreach($presenters as $presenter) {
@@ -79,7 +79,7 @@ class mod_webinar_session_form extends moodleform {
 		$errors = parent::validation($data, $files);
 
 		if($data['presenter'] == 0) {
-			$errors['presenter'] = "You must select a presenter for this webinar session.";
+			$errors['presenter'] = get_string('selecthosterror', 'webinar'); 
 		}
 
         return $errors;

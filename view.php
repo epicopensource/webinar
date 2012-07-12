@@ -203,7 +203,7 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 				$status = get_string('closed', 'webinar');
                 $sessionstarted = true;
             }
-            //elseif ($bookedsession && $session->id == $bookedsession->sessionid) {
+
 			elseif ($bookedsession) {
                 $signupstatus = webinar_get_status($bookedsession->statuscode);
 
@@ -224,11 +224,10 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 			$session_value = $xml->common->cookie;
 
 			//Login user
-			$url = $webinar->sitexmlapiurl . "?action=login&login=" . $USER->email . "&password=test&session=" . $session_value;
+			$url = $webinar->sitexmlapiurl . "?action=login&login=" . $USER->email . "&password=" . $webinar->adminpassword . "&session=" . $session_value;
 			$xmlstr = file_get_contents($url);
 			$xml = new SimpleXMLElement($xmlstr);
-			//print_r($xml);
-				
+
 			$meetingurl = str_replace('/api/xml', '', $webinar->sitexmlapiurl) . $session->urlpath;
 			$meetingurlwithsession = $meetingurl . '?session=' . $session_value;
 			
@@ -270,10 +269,8 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 				}
 				else {
 					//User email address is not registered yet with Adobe Connect - add them and get back the principal ID
-					$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . $USER->firstname . "&last-name=" . $USER->lastname . "&login=" . $USER->email . 
-						"&password=test&type=user&send-email=false&has-children=0&email=" . $USER->email . "&session=" . $session_value;
-						
-						//echo "<br/><br/>" . $url . "<br/><br/>";
+					$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . str_replace(' ', '%20', $USER->firstname) . "&last-name=" . str_replace(' ', '%20', $USER->lastname) . "&login=" . $USER->email . 
+						"&password=" . $webinar->adminpassword . "&type=user&send-email=false&has-children=0&email=" . $USER->email . "&session=" . $session_value;
 						
 					$xmlstr = file_get_contents($url);
 					$xml = new SimpleXMLElement($xmlstr);
@@ -291,7 +288,7 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 				$xml = new SimpleXMLElement($xmlstr);
 				
 				//Login BACK in as user, after having logged in as admin to add current user as participant
-				$url = $webinar->sitexmlapiurl . "?action=login&login=" . $USER->email . "&password=test&session=" . $session_value;
+				$url = $webinar->sitexmlapiurl . "?action=login&login=" . $USER->email . "&password=" . $webinar->adminpassword . "&session=" . $session_value;
 				$xmlstr = file_get_contents($url);
 				$xml = new SimpleXMLElement($xmlstr);
 				
@@ -299,7 +296,6 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 				$url = $webinar->sitexmlapiurl . "?action=sco-contents&sco-id=" . $session->scoid . "&filter-icon=archive&session=" . $session_value;
 				$xmlstr = file_get_contents($url);
 				$xml = new SimpleXMLElement($xmlstr);
-				//print_r($xml);
 				
 				foreach ($xml->scos->sco as $sco) {
 				
@@ -362,16 +358,15 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
     }
 
     // Upcoming sessions
-    print_heading(get_string('upcomingsessions', 'webinar'));
+    print_heading(get_string('upcomingsessions', 'webinar')); //remove deprecated print_heading()
     if (empty($upcomingdata) and empty($upcomingtbddata)) {
-        //print_string('noupcoming', 'webinar');
 		echo '<p align="center">' . get_string('noupcoming', 'webinar', $webinar->name) . '</p>';
     }
     else {
         $upcomingtable = new object();
         $upcomingtable->summary = get_string('upcomingsessionslist', 'webinar');
         $upcomingtable->head = $tableheader;
-        $upcomingtable->rowclass = array_merge($upcomingrowclass, $upcomingtbdrowclass);
+        $upcomingtable->rowclasses = array_merge($upcomingrowclass, $upcomingtbdrowclass);
         $upcomingtable->width = '100%';
         $upcomingtable->data = array_merge($upcomingdata, $upcomingtbddata);
         print_table($upcomingtable);
@@ -387,7 +382,7 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
         $previoustable = new object();
         $previoustable->summary = get_string('previoussessionslist', 'webinar');
         $previoustable->head = $tableheader;
-        $previoustable->rowclass = $previousrowclass;
+        $previoustable->rowclasses = $previousrowclass;
         $previoustable->width = '100%';
         $previoustable->data = $previousdata;
         print_table($previoustable);
