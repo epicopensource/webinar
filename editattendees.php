@@ -69,12 +69,12 @@ if ($frm = data_submitted()) {
             }
 
             // Check if we are waitlisting or booking
-             if ($session->datetimeknown) {
-                    $status = WEBINAR_STATUS_BOOKED;
-            } 
-			else {
+             //if ($session->datetimeknown) {
+              //      $status = WEBINAR_STATUS_BOOKED;
+            //} 
+			//else {
                     $status = WEBINAR_STATUS_WAITLISTED;
-            }
+           //}
 
             if (!webinar_user_signup($session, $webinar, $course, '', WEBINAR_BOTH,
                                                 $status, $adduser, !$suppressemail)) {
@@ -144,10 +144,11 @@ $navigation = build_navigation($navlinks);
 $PAGE->set_pagetype('webinar');
 $PAGE->set_title($webinar->name);
 $PAGE->set_heading($webinar->name);
+$PAGE->set_url('/editattendees.php?s='.$session->id.'&amp;backtoallsessions='.$backtoallsessions);
 echo $OUTPUT->header();
 
-print_box_start();
-print_heading(get_string('addremoveattendees', 'webinar'), 'center');
+echo $OUTPUT->box_start();
+echo $OUTPUT->heading(get_string('addremoveattendees', 'webinar'));
 
 /// Get the list of currently signed-up users
 $existingusers = webinar_get_attendees($session->id);
@@ -227,7 +228,7 @@ $nonattendees_sql = "
 
 $nonattendees_rs = $DB->get_recordset_sql($nonattendees_sql);
 
-$table = new object();
+$table = new html_table();
 $table->head = array(get_string('name'), get_string('email'), get_string('status'));
 $table->align = array('left');
 $table->size = array('50%');
@@ -238,7 +239,7 @@ if ($na_rs = $DB->get_recordset_sql($nonattendees_sql)) {
 		$data[] = $record->firstname . ' ' . $record->lastname;
 		
 		$data[] = $record->email;
-		$data[] = get_string('status_'.webinar_get_status($user->statuscode), 'webinar');
+		//$data[] = get_string('status_'.webinar_get_status($user->statuscode), 'webinar');
 		
 		$table->data[] = $data;
 	}
@@ -265,5 +266,5 @@ print '<p style="text-align: center">';
 $url = $CFG->wwwroot.'/mod/webinar/attendees.php?s='.$session->id.'&amp;backtoallsessions='.$backtoallsessions;
 print '<a href="'.$url.'">'.get_string('goback', 'webinar').'</a></p>';
 
-print_box_end();
-print_footer($course);
+echo $OUTPUT->box_end();
+echo $OUTPUT->footer($course);

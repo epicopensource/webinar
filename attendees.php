@@ -87,6 +87,7 @@ $navigation = build_navigation($navlinks);
 $PAGE->set_pagetype('webinar');
 $PAGE->set_title($webinar->name);
 $PAGE->set_heading($webinar->name);
+$PAGE->set_url('/attendees.php?s='.$session->id.'&amp;backtoallsessions='.$backtoallsessions);
 echo $OUTPUT->header();
 
 if ($takeattendance && !has_capability('mod/webinar:takeattendance', $context)) {
@@ -109,8 +110,11 @@ else {
 }
 $heading .= ' - ' . format_string($webinar->name);
 
-print_box_start();
-print_heading($heading, 'center');
+//JoeB - dev changes for Moodle 2.3 - replace references to deprecated functions print_box_start and print_heading()
+//print_box_start();
+//print_heading($heading, 'center');
+echo $OUTPUT->box_start();
+echo $OUTPUT->heading($heading);
 
 if ($takeattendance) {
     echo '<form action="attendees.php?s='.$s.'" method="post">';
@@ -123,7 +127,9 @@ else {
     webinar_print_session($session, true);
 }
 
-$table = new object();
+//JoeB - dev upgrade for 2.3, replace deprecated print_table()
+//$table = new object();
+$table = new html_table();
 $table->head = array(get_string('name'));
 $table->summary = get_string('attendeestablesummary', 'webinar');
 $table->align = array('left');
@@ -269,10 +275,13 @@ if ($attendees = webinar_get_attendees($session->id)) {
         $table->data[] = $data;
     }
 
-    print_table($table);
+    //print_table($table);
+	echo html_writer::table($table);
 }
 else {
-    print_heading(get_string('nosignedupusers', 'webinar'));
+	//JoeB - dev changes for Moodle 2.3 - replace references to deprecated function print_heading()
+    //print_heading(get_string('nosignedupusers', 'webinar'));
+	echo $OUTPUT->heading(get_string('nosignedupusers', 'webinar'));
 }
 
 if ($takeattendance) {
@@ -310,14 +319,15 @@ else {
 if (!$takeattendance && ($attendees = webinar_get_requests($session->id))) {
 
     echo '<br id="unapproved" />';
-    print_heading(get_string('unapprovedrequests', 'webinar'), 'center');
+    echo $OUTPUT->heading(get_string('unapprovedrequests', 'webinar'));
 
     echo '<form action="attendees.php?s='.$s.'" method="post">';
     echo '<input type="hidden" name="sesskey" value="'.$USER->sesskey.'" />';
     echo '<input type="hidden" name="s" value="'.$s.'" />';
     echo '<input type="hidden" name="backtoallsessions" value="'.$backtoallsessions.'" /></p>';
 
-    $table = new object();
+    //$table = new object();
+	$table = new html_table();
     $table->summary = get_string('requeststablesummary', 'webinar');
     $table->head = array(get_string('name'), get_string('timerequested', 'webinar'),
                          get_string('decidelater', 'webinar'), get_string('decline', 'webinar'), get_string('approve', 'webinar'));
@@ -346,7 +356,8 @@ if (!$takeattendance && ($attendees = webinar_get_requests($session->id))) {
         $table->data[] = array(get_string('noactionableunapprovedrequests', 'webinar'), '', '');
     }
 
-    print_table($table);
+    //print_table($table);
+	echo html_writer::table($table);
 
     echo '<p><input type="submit" value="Update requests" /></p>';
     echo '</form>';
@@ -357,9 +368,10 @@ if (!$takeattendance and has_capability('mod/webinar:viewcancellations', $contex
     ($attendees = webinar_get_cancellations($session->id))) {
 
     echo '<br />';
-    print_heading(get_string('cancellations', 'webinar'), 'center');
+    echo $OUTPUT->heading(get_string('cancellations', 'webinar'));
 
-    $table = new object();
+    //$table = new object();
+	$table = new html_table();
     $table->summary = get_string('cancellationstablesummary', 'webinar');
     $table->head = array(get_string('name'), get_string('timesignedup', 'webinar'),
                          get_string('timecancelled', 'webinar'), get_string('cancelreason', 'webinar'));
@@ -373,11 +385,15 @@ if (!$takeattendance and has_capability('mod/webinar:viewcancellations', $contex
         $data[] = format_string($attendee->cancelreason);
         $table->data[] = $data;
     }
-    print_table($table);
+    //print_table($table);
+	echo html_writer::table($table);
 }
 
-print_box_end();
-print_footer($course);
+//JoeB - dev changes for Moodle 2.3 - replace references to deprecated functions print_box_end and print_footer
+//print_box_end();
+//print_footer($course);
+echo $OUTPUT->box_end();
+echo $OUTPUT->footer($course);
 
 function webinar_get_cancellations($sessionid)
 {

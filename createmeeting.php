@@ -22,14 +22,11 @@ function create_meeting($webinar, $fromform, $date, $presenter_details) {
 	$xmlstr = file_get_contents($url);
 	$xml = new SimpleXMLElement($xmlstr);
 
-	//Step 3 - get sco ID of 'my-meetings'
 	$url = $webinar->sitexmlapiurl . "?action=sco-shortcuts&session=" . $session;
 	$xmlstr = file_get_contents($url);
 	$xml = new SimpleXMLElement($xmlstr);
-	//print_r($xml);
 	
 	foreach ($xml->shortcuts->sco as $sco) {
-		//if ($sco->attributes()->type == 'meetings') {
 		if ($sco->attributes()->type == 'meetings') {
 			foreach($sco->attributes() as $key => $val) {
 				if($key == 'sco-id') {
@@ -56,7 +53,6 @@ function create_meeting($webinar, $fromform, $date, $presenter_details) {
 
 	$xmlstr = file_get_contents($url);
 	$xml = new SimpleXMLElement($xmlstr);
-	//print_r($xml);
 	
 	$urlpath = $xml->sco->{'url-path'};
 
@@ -106,10 +102,11 @@ function create_meeting($webinar, $fromform, $date, $presenter_details) {
 	$url = $webinar->sitexmlapiurl . "?action=permissions-update&principal-id=" . $principal_id . "&acl-id=" . $scoid . "&permission-id=host&session=" . $session;
 	$xmlstr = file_get_contents($url);
 	$xml = new SimpleXMLElement($xmlstr);
-	//print_r($xml);
 
 	$webinardetails = new object();
-    $webinardetails->scoid = $scoid;
-    $webinardetails->urlpath = $urlpath;
+	
+	//JoeB - changes for Moodle 2.3, explicitly cast the scoid and urlpath simplexml objects
+    $webinardetails->scoid = (string)$scoid[0];
+    $webinardetails->urlpath = (string)$urlpath[0];
 	return $webinardetails;
 }

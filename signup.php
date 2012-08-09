@@ -52,9 +52,10 @@ if (isguestuser()) {
 	$PAGE->set_title($webinar->name);
 	$PAGE->set_heading($webinar->name);
 	echo $OUTPUT->header();
-    notice_yesno('<p>' . get_string('guestsno', 'webinar') . "</p>\n\n</p>" .
+    //JoeB - remove deprecated reference to notice_yesno
+	echo $OUTPUT->confirm('<p>' . get_string('guestsno', 'webinar') . "</p>\n\n</p>" .
         get_string('liketologin') . '</p>', $loginurl, get_referer(false));
-    print_footer();
+    echo $OUTPUT->footer();
     exit();
 }
 
@@ -116,7 +117,7 @@ if ($fromform = $mform->get_data()) { // Form submitted
 		
 		
 		$heading = get_string('registersuccess', 'webinar');
-		print_heading($heading, 'center');
+		echo $OUTPUT->heading($heading);
 		
         $message = get_string('registrationsuccessful', 'webinar', $webinar->name);
         $timemessage = 4;
@@ -156,13 +157,13 @@ if ($signedup and $signedup != $session->id) {
 }
 */
 
-print_box_start();
-print_heading($heading, 'center');
+echo $OUTPUT->box_start();
+echo $OUTPUT->heading($heading);
 
 if (!$signedup and !webinar_session_has_capacity($session, $context)) {
     print_error('sessionisfull', 'webinar', $returnurl);
-    print_box_end();
-    print_footer($course);
+    echo $OUTPUT->box_end();
+    echo $OUTPUT->footer($course);
     exit;
 }
 
@@ -195,5 +196,5 @@ else {
     $mform->display();
 }
 
-print_box_end();
-print_footer($course);
+echo $OUTPUT->box_end();
+echo $OUTPUT->footer($course);

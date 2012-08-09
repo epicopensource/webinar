@@ -520,7 +520,7 @@ function webinar_update_attendees($session) {
 
                     if ($user->statuscode == WEBINAR_STATUS_WAITLISTED) {
 
-                        if (!webinar_user_signup($session, $webinar, $course, $user->discountcode, $user->notificationtype, WEBINAR_STATUS_BOOKED, $user->id)) {
+                        if (!webinar_user_signup($session, $webinar, $course, '', 0, WEBINAR_STATUS_BOOKED, $user->id)) {
                             //rollback_sql();
                             return false;
                         }
@@ -957,7 +957,7 @@ function webinar_get_sessions($webinarid, $location='')
 
     if ($sessions) {
         foreach ($sessions as $key => $value) {
-            $sessions[$key]->duration = webinar_minutes_to_hours($sessions[$key]->duration);
+            //$sessions[$key]->duration = webinar_minutes_to_hours($sessions[$key]->duration);
             $sessions[$key]->sessiondates = webinar_get_session_dates($value->id);
         }
     }
@@ -1650,9 +1650,12 @@ function webinar_user_signup($session, $webinar, $course, $discountcode,
     // Work out which status to use
 
     // If approval not required
-    if (!$webinar->approvalreqd) {
+    //if (!$webinar->approvalreqd) {
         $new_status = $statuscode;
-    } else {
+    
+	
+	/*
+	} else {
         // If approval required
 
         // Get current status (if any)
@@ -1666,6 +1669,7 @@ function webinar_user_signup($session, $webinar, $course, $discountcode,
             $new_status = WEBINAR_STATUS_REQUESTED;
         }
     }
+	*/
 
     // Update status
     if (!webinar_update_signup_status($usersignup->id, $new_status, $userid)) {
@@ -1721,7 +1725,7 @@ function webinar_user_signup($session, $webinar, $course, $discountcode,
 /**
  * Send booking request notice to user and their manager
  *
- * @param   object  $webinar Facetoface instance
+ * @param   object  $webinar webinar instance
  * @param   object  $session    Session instance
  * @param   int     $userid     ID of user requesting booking
  * @return  string  Error string, empty on success
@@ -1847,7 +1851,7 @@ function webinar_user_cancel($session, $userid=false, $forcecancel=false, &$erro
     }
 
     // if $forcecancel is set, cancel session even if already occurred
-    // used by facetotoface_delete_session()
+    // used by webinar_delete_session()
     if (!$forcecancel) {
         $timenow = time();
         // don't allow user to cancel a session that has already occurred
@@ -2031,14 +2035,14 @@ function webinar_send_notice($postsubject, $posttext, $posttextmgrheading,
  */
 function webinar_send_confirmation_notice($webinar, $session, $userid, $notificationtype, $iswaitlisted) {
 
-    $posttextmgrheading = $webinar->confirmationinstrmngr;
+    $posttextmgrheading = ''; //$webinar->confirmationinstrmngr;
 
     if (!$iswaitlisted) {
-        $postsubject = $webinar->confirmationsubject;
-        $posttext = $webinar->confirmationmessage;
+        $postsubject = ''; //$webinar->confirmationsubject;
+        $posttext = ''; //$webinar->confirmationmessage;
     } else {
-        $postsubject = $webinar->waitlistedsubject;
-        $posttext = $webinar->waitlistedmessage;
+        $postsubject = ''; //$webinar->waitlistedsubject;
+        $posttext = ''; //$webinar->waitlistedmessage;
 
         // Don't send an iCal attachement when we don't know the date!
         $notificationtype |= WEBINAR_TEXT; // add a text notification
@@ -2064,9 +2068,9 @@ function webinar_send_confirmation_notice($webinar, $session, $userid, $notifica
 function webinar_send_cancellation_notice($webinar, $session, $userid) {
 	global $DB;
 	
-    $postsubject = $webinar->cancellationsubject;
-    $posttext = $webinar->cancellationmessage;
-    $posttextmgrheading = $webinar->cancellationinstrmngr;
+    $postsubject = ''; //$webinar->cancellationsubject;
+    $posttext = ''; //$webinar->cancellationmessage;
+    $posttextmgrheading = ''; //$webinar->cancellationinstrmngr;
 
     // Lookup what type of notification to send
     $notificationtype = $DB->get_field('webinar_signups', 'notificationtype', array('sessionid' => $session->id, 'userid' => $userid));
@@ -3173,12 +3177,12 @@ function webinar_remove_session_from_site_calendar($session)
 	global $DB;
 	
 	$delarray = array(
-						modulename => 'webinar',
-						eventtype => 'webinarsession',
-						instance => $session->webinar,
-						courseid => SITEID,
-						uuid => $session->id,
-						userid => '0'
+						'modulename' => 'webinar',
+						'eventtype' => 'webinarsession',
+						'instance' => $session->webinar,
+						'courseid' => SITEID,
+						'uuid' => $session->id,
+						'userid' => '0'
 						
 	);
 	
@@ -3212,9 +3216,9 @@ function webinar_update_calendar_events($session, $eventtype)
     }
 	
 	$wherearray = array(
-						modulename => 'webinar',
-						eventtype => 'webinar' . $eventtype,
-						instance => $session->webinar,
+						'modulename' => 'webinar',
+						'eventtype' => 'webinar' . $eventtype,
+						'instance' => $session->webinar,
 	);
 	
     // Find all users with this session in their calendar
@@ -3252,9 +3256,9 @@ function webinar_session_has_capacity($session, $context = false) {
     }
 
     // If allowoverbook enabled
-    if ($session->allowoverbook) {
-        return true;
-    }
+    //if ($session->allowoverbook) {
+    //    return true;
+    //}
 
     $signupcount = webinar_get_num_attendees($session->id);
     if ($signupcount >= $session->capacity) {
@@ -3282,7 +3286,8 @@ function webinar_print_session($session, $showcapacity, $calendaroutput=false, $
 
 	//print_r($session);
 	
-    $table = new object();
+    //$table = new object();
+	$table = new html_table();
     $table->summary = get_string('sessionsdetailstablesummary', 'webinar');
     $table->class = 'f2fsession';
     $table->width = '50%';
@@ -3343,11 +3348,11 @@ function webinar_print_session($session, $showcapacity, $calendaroutput=false, $
     $placesleft = $session->capacity - $signupcount;
 
     if ($showcapacity) {
-        if ($session->allowoverbook) {
-            $table->data[] = array(get_string('capacity', 'webinar'), $session->capacity . ' ('.strtolower(get_string('allowoverbook', 'webinar')).')');
-        } else {
+        //if ($session->allowoverbook) {
+        //    $table->data[] = array(get_string('capacity', 'webinar'), $session->capacity . ' ('.strtolower(get_string('allowoverbook', 'webinar')).')');
+        //} else {
             $table->data[] = array(get_string('capacity', 'webinar'), $session->capacity);
-        }
+        //}
     }
     elseif (!$calendaroutput) {
         $table->data[] = array(get_string('seatsavailable', 'webinar'), max(0, $placesleft));
@@ -3404,7 +3409,8 @@ function webinar_print_session($session, $showcapacity, $calendaroutput=false, $
     }
 	*/
 
-    return print_table($table, $return);
+    //return print_table($table, $return);
+	return html_writer::table($table, $return);
 }
 
 /**
@@ -3519,7 +3525,8 @@ function webinar_list_of_customfields()
     global $CFG, $USER, $DB;
 
     if ($fields = $DB->get_records('webinar_session_field', NULL, 'name', 'id, name')) {
-        $table = new stdClass;
+        //$table = new stdClass;
+		$table = new html_table();
         $table->width = '50%';
         $table->tablealign = 'left';
         $table->data = array();
@@ -3532,7 +3539,8 @@ function webinar_list_of_customfields()
                 '<img class="iconsmall" src="'.$CFG->wwwroot.'/pix/t/delete.gif" alt="'.get_string('delete').'" /></a>';
             $table->data[] = array($fieldname, $editlink, $deletelink);
         }
-        return print_table($table, true);
+        //return print_table($table, true);
+		return html_writer::table($table, true);
     }
 
     return get_string('nocustomfields', 'webinar');
@@ -3729,7 +3737,7 @@ function webinar_list_of_sitenotices()
     global $CFG, $USER, $DB;
 
     if ($notices = $DB->get_records('webinar_notice', NULL, 'name', 'id, name')) {
-        $table = new stdClass;
+        $table = new html_table();
         $table->width = '50%';
         $table->tablealign = 'left';
         $table->data = array();
@@ -3742,7 +3750,7 @@ function webinar_list_of_sitenotices()
                 '<img class="iconsmall" src="'.$CFG->wwwroot.'/pix/t/t/delete.gif" alt="'.get_string('delete').'" /></a>';
             $table->data[] = array($noticename, $editlink, $deletelink);
         }
-        return print_table($table, true);
+        return html_writer::table($table, true);
     }
 
     return get_string('nositenotices', 'webinar');

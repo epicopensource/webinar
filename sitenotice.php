@@ -131,10 +131,11 @@ elseif ($notice != null) { // Edit mode
 
 print_header_simple(format_string($title), '', $navigation, '', '', true);
 
-print_box_start();
-print_heading($title);
+echo $OUTPUT->box_start();
+echo $OUTPUT->heading($title);
+//print_heading($title);
 
 $mform->display();
 
-print_box_end();
-print_footer();
+echo $OUTPUT->box_end();
+echo $OUTPUT->footer();

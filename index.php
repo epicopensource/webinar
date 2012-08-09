@@ -30,6 +30,7 @@ $navlinks[] = array('name' => $pagetitle, 'link' => '', 'type' => 'title');
 $navigation = build_navigation($navlinks);
 
 $PAGE->set_title($strwebinars);
+$PAGE->set_url("/mod/webinar/index.php?id=$course->id");
     $PAGE->set_heading($course->fullname);
     //$PAGE->navbar->add($strwebinars);
     echo $OUTPUT->header();
@@ -40,6 +41,8 @@ if (!$webinars = get_all_instances_in_course('webinar', $course)) {
 }
 
 $timenow = time();
+
+$table = new html_table();
 
 if ($course->format == 'weeks' && has_capability('mod/webinar:viewattendees', $context)) {
     $table->head  = array ($strweek, $strwebinarname, get_string('sign-ups', 'webinar'));
@@ -111,5 +114,7 @@ foreach ($webinars as $webinar) {
 
 echo "<br />";
 
-print_table($table);
-print_footer($course);
+echo html_writer::table($table);
+//print_table($table);
+
+echo $OUTPUT->footer($course);

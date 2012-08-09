@@ -36,7 +36,7 @@
       </td>
       <td valign="top">
         <br />
-        <?php check_theme_arrows(); ?>
+        <?php //check_theme_arrows(); ?>
         <p class="arrow_button">
             <input name="add" id="add" type="submit" value="<?php echo ' &laquo; '.get_string('add'); ?> " title="<?php print_string('add'); ?>" />
             <br />
@@ -88,8 +88,10 @@
 
         if ($nonattendees) {
             echo '<br />';
-            print_heading(get_string('unapprovedrequests', 'webinar').' ('.$nonattendees.')');
-            print_table($table);
+            //print_heading(get_string('unapprovedrequests', 'webinar').' ('.$nonattendees.')');
+            //print_table($table);
+			echo $OUTPUT->heading(get_string('unapprovedrequests', 'webinar').' ('.$nonattendees.')');
+			echo html_writer::table($table);
         }
 
     ?>

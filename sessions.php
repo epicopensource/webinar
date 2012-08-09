@@ -164,10 +164,10 @@ if ($fromform = $mform->get_data()) { // Form submitted
 	
 		//Create meeting through Adobe Connect API call
 		$webinardetails = create_meeting($webinar, $fromform, $date, $presenter_details);
-		
+
 		$todb->scoid = $webinardetails->scoid;
 		$todb->urlpath = $webinardetails->urlpath;
-	
+
         if (!$sessionid = webinar_add_session($todb, $sessiondates)) {
             rollback_sql();
             add_to_log($course->id, 'webinar', 'add session (FAILED)', 'sessions.php?f='.$webinar->id, $webinar->id, $cm->id);
@@ -263,7 +263,7 @@ $PAGE->navbar->add($webinar->name);
 echo $OUTPUT->header();
 
 //print_box_start();
-$OUTPUT->box_start();
+echo $OUTPUT->box_start();
 //print_heading($heading, 'center');
 echo $OUTPUT->heading($heading);
 
@@ -274,12 +274,15 @@ if (!empty($errorstr)) {
 if ($d) {
     $viewattendees = has_capability('mod/webinar:viewattendees', $context);
     webinar_print_session($session, $viewattendees);
-    notice_yesno(get_string('deletesessionconfirm', 'webinar', format_string($webinar->name)),
+    //JoeB - dev change for Moodle 2.3 - replace reference to deprecated function notice_yesno()
+	//notice_yesno(get_string('deletesessionconfirm', 'webinar', format_string($webinar->name)),
+    //             "sessions.php?s=$session->id&amp;d=1&amp;confirm=1&amp;sesskey=$USER->sesskey", $returnurl);
+	echo $OUTPUT->confirm(get_string('deletesessionconfirm', 'webinar', format_string($webinar->name)),
                  "sessions.php?s=$session->id&amp;d=1&amp;confirm=1&amp;sesskey=$USER->sesskey", $returnurl);
 }
 else {
     $mform->display();
 }
 
-$OUTPUT->box_end();
+echo $OUTPUT->box_end();
 echo $OUTPUT->footer($course);

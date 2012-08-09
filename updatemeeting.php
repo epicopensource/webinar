@@ -66,12 +66,8 @@ function update_meeting($webinar, $session_info, $date, $presenter_details) {
 	//take the presenter user's principal ID and assign them as presenter of the session
 	$url = $webinar->sitexmlapiurl . "?action=permissions-update&principal-id=" . $principal_id . "&acl-id=" . $scoid . "&permission-id=host&session=" . $session;
 	
-	//echo "|".$url;
-
 	$xmlstr = file_get_contents($url);
 	$xml = new SimpleXMLElement($xmlstr);
 	
-	//print_r($xml);
-	//exit();
 
 }

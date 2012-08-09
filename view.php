@@ -97,6 +97,7 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
     global $USER;
     global $CFG;
 	global $DB;
+	global $OUTPUT;
 
     $timenow = time();
 
@@ -114,6 +115,14 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
             $tableheader[] = format_string($field->name);
         }
     }
+	
+	echo '
+	<style type="text/css">
+		.generaltable th {
+			text-align: left;
+		}
+	</style>
+	';
 	
 	$tableheader[] = get_string('startdatetime', 'webinar');
 	$tableheader[] = get_string('finishdatetime', 'webinar');
@@ -358,18 +367,26 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
     }
 
     // Upcoming sessions
-    print_heading(get_string('upcomingsessions', 'webinar')); //remove deprecated print_heading()
+    
+	$OUTPUT->heading(get_string('upcomingsessions', 'webinar'));
+	//print_heading(get_string('upcomingsessions', 'webinar')); //remove deprecated print_heading()
+	
     if (empty($upcomingdata) and empty($upcomingtbddata)) {
 		echo '<p align="center">' . get_string('noupcoming', 'webinar', $webinar->name) . '</p>';
     }
     else {
-        $upcomingtable = new object();
+        //JoeB - dev upgrade for 2.3, replace deprecated print_table()
+		//$upcomingtable = new object();
+		$upcomingtable = new html_table();
+		
         $upcomingtable->summary = get_string('upcomingsessionslist', 'webinar');
         $upcomingtable->head = $tableheader;
         $upcomingtable->rowclasses = array_merge($upcomingrowclass, $upcomingtbdrowclass);
         $upcomingtable->width = '100%';
         $upcomingtable->data = array_merge($upcomingdata, $upcomingtbddata);
-        print_table($upcomingtable);
+        
+		//print_table($upcomingtable);
+		echo html_writer::table($upcomingtable);
     }
 
     if ($editsessions) {
@@ -379,13 +396,18 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
     // Previous sessions
     if (!empty($previousdata)) {
         print_heading(get_string('previoussessions', 'webinar'));
-        $previoustable = new object();
+        
+		//$previoustable = new object();
+		$previoustable = new html_table();
+		
         $previoustable->summary = get_string('previoussessionslist', 'webinar');
         $previoustable->head = $tableheader;
         $previoustable->rowclasses = $previousrowclass;
         $previoustable->width = '100%';
         $previoustable->data = $previousdata;
-        print_table($previoustable);
+		
+        //print_table($previoustable);
+		echo html_writer::table($previoustable);
     }
 }
 

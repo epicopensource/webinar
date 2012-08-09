@@ -55,13 +55,15 @@ if ($fromform = $mform->get_data()) { // Form submitted
 		//Send cancel registration email to user
 		send_email_cancelsignup($webinar, $session, $cm, $USER);
 		
+		/* JoeB - dev change for Moodle 2.3, comment this out
 		$PAGE->set_pagetype('webinar');
 		$PAGE->set_title($webinar->name);
 		$PAGE->set_heading($webinar->name);
 		echo $OUTPUT->header();
 		
 		$heading = get_string('confirmcancelbooking', 'webinar');
-		print_heading($heading, 'center');
+		echo $OUTPUT->heading($heading);
+		*/
 		
         $message = get_string('bookingcancelled', 'webinar', $webinar->name);
 		$message = '<div style="height: 10px;">&nbsp;</div>' . $message;
@@ -85,6 +87,7 @@ $navigation = build_navigation($navlinks);
 $PAGE->set_pagetype('webinar');
 $PAGE->set_title($webinar->name);
 $PAGE->set_heading($webinar->name);
+$PAGE->set_url('/cancelsignup.php?s='.$session->id.'&amp;backtoallsessions='.$backtoallsessions);
 echo $OUTPUT->header();
 
 $heading = get_string('cancelbookingfor', 'webinar', $webinar->name);
@@ -92,8 +95,11 @@ $heading = get_string('cancelbookingfor', 'webinar', $webinar->name);
 $viewattendees = has_capability('mod/webinar:viewattendees', $context);
 $signedup = webinar_check_signup($webinar->id);
 
-print_box_start();
-print_heading($heading, 'center');
+//JoeB - dev changes for Moodle 2.3 - replace references for deprecated function
+//print_box_start();
+//print_heading($heading, 'center');
+echo $OUTPUT->box_start();
+echo $OUTPUT->heading($heading);
 
 if ($signedup) {
     webinar_print_session($session, $viewattendees);
@@ -103,5 +109,7 @@ else {
     print_error('notsignedup', 'webinar', $returnurl);
 }
 
-print_box_end();
-print_footer($course);
+//print_box_end();
+//print_footer($course);
+echo $OUTPUT->box_end();
+echo $OUTPUT->footer($course);
