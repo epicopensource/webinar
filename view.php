@@ -395,7 +395,7 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 
     // Previous sessions
     if (!empty($previousdata)) {
-        print_heading(get_string('previoussessions', 'webinar'));
+        echo $OUTPUT->heading(get_string('previoussessions', 'webinar'));
         
 		//$previoustable = new object();
 		$previoustable = new html_table();
