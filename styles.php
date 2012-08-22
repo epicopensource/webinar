@@ -19,6 +19,4 @@ body#mod-webinar-attendees div#content div.generalbox {
 tr.highlight td.cell {
     background-color: #AAFFAA;
 }
-.generaltable th.header {
-    text-align: left;
-}
+

@@ -1,6 +1,6 @@
-1.1 (2012-08-09) - Changes made to ensure compatibility with Moodle 2.3
+1.1.1 (2012-08-21) - Portuguese/Brazilian translation provided by Herbert de Carvalho 
 1.0 (2012-08-07) - Released publically as plugin on moodle.org
 0.2 (2012-08-06)
- - Changes made to ensure compatibility with Moodle 2.2
+ - Changes made to ensure compatibility with Moodle 2.3
 0.1 (2012-06-08)
  - First public draft release

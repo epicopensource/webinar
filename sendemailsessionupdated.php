@@ -26,6 +26,10 @@ function send_email_sessionupdated($webinar, $session_info, $cm, $date) {
 			$contact = get_string('sessionupdatedcontact', 'webinar', $a);
 			$message = get_string('sessionupdatedmessage', 'webinar', $a);
 
+			//last task - strip <p> and </p> from the message before we send the email
+			$message = str_replace('<p>','',$message);
+			$message = str_replace('</p>','',$message);
+
 			email_to_user($user, $contact, $subject, $message);
 		}
 	}

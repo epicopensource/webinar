@@ -26,5 +26,9 @@ function send_email_signup($webinar, $session_info, $cm, $user) {
 	$contact = get_string('sessionregistercontact', 'webinar', $a);
 	$message = get_string('sessionregistermessage', 'webinar', $a);
 
+	//last task - strip <p> and </p> from the message before we send the email
+	$message = str_replace('<p>','',$message);
+	$message = str_replace('</p>','',$message);
+
 	email_to_user($user, $contact, $subject, $message);
 }

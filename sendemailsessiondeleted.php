@@ -28,6 +28,9 @@ function send_email_sessiondeleted($webinar, $session_info) {
 			$subject = get_string('sessiondeletedsubject', 'webinar', $a);
 			$contact = get_string('sessiondeletedcontact', 'webinar', $a);
 			$message = get_string('sessiondeletedmessage', 'webinar', $a);
+			//last task - strip <p> and </p> from the message before we send the email
+			$message = str_replace('<p>','',$message);
+			$message = str_replace('</p>','',$message);
 
 			email_to_user($user, $contact, $subject, $message);
 		}
