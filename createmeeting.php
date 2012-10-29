@@ -21,13 +21,73 @@ function create_meeting($webinar, $fromform, $date, $presenter_details) {
 	$url = $webinar->sitexmlapiurl . "?action=login&login=" . $webinar->adminemail . "&password=" . $webinar->adminpassword . "&session=" . $session;
 	$xmlstr = file_get_contents($url);
 	$xml = new SimpleXMLElement($xmlstr);
+	//print_r($xml);
+	
+	/* JoeB changes 25/10/2012 - capture the number of hosts allowed for this Adobe Connect account */
+	$url = $webinar->sitexmlapiurl . "?action=principal-list&session=" . $session;
+	$xmlstr = file_get_contents($url);
+	$xml = new SimpleXMLElement($xmlstr);
 
+	$p_array_count = 0;
+	foreach($xml->{'principal-list'}->principal as $principal_array) {
+
+		$principal = $principal_array; //$principal_array[$p_array_count];
+		
+		foreach($principal->name as $key => $val) {
+			if ($val == 'Meeting Hosts') {
+				foreach($principal->attributes() as $akey => $aval) {
+
+					if($akey == 'principal-id') {
+						$principal_id = $aval;
+					}
+				}
+			}
+		}
+		$p_array_count++;
+	}
+	
+	$url = $webinar->sitexmlapiurl . "?action=report-quotas&session=" . $session;
+	$xmlstr = file_get_contents($url);
+	$xml = new SimpleXMLElement($xmlstr);
+	
+	$q_array_count = 0;
+	$found_limit = false;
+	foreach($xml->{'report-quotas'}->quota as $quota_array) {
+	
+		$quota = $quota_array; //$quota_array[$q_array_count];
+	
+		foreach($quota->attributes() as $key => $val) {
+			if($key == 'acl-id') {
+				
+				if((int)$val == (int)$principal_id) {
+					$found_limit = true;
+				}
+			}
+			if($found_limit) {
+				if($key == 'limit') {
+					$hosts_limit = $val;
+					break;
+				}
+			}
+		}
+		$q_array_count++;
+	}
+	/* end JoeB changes */
+	
 	$url = $webinar->sitexmlapiurl . "?action=sco-shortcuts&session=" . $session;
 	$xmlstr = file_get_contents($url);
 	$xml = new SimpleXMLElement($xmlstr);
 	
 	foreach ($xml->shortcuts->sco as $sco) {
-		if ($sco->attributes()->type == 'meetings') {
+	
+		if ((int)$hosts_limit == 1) {
+			$meeting_search = 'my-meetings'; //'my-meetings' for single host licenses
+		}
+		else {
+			$meeting_search = 'meetings'; //'meetings' for multihost accounts
+		}
+	
+		if ($sco->attributes()->type == $meeting_search) {  
 			foreach($sco->attributes() as $key => $val) {
 				if($key == 'sco-id') {
 					$scoid = $val;
@@ -49,7 +109,7 @@ function create_meeting($webinar, $fromform, $date, $presenter_details) {
 	$meetingname = str_replace(' ', '%20', $webinar->name . ' ' . $datebegin . ' ' . $timebegin);
 	
 	$url = $webinar->sitexmlapiurl . "?action=sco-update&type=meeting&name=" . $meetingname . 
-				"&summary=xyz&folder-id=" . $scoid . "&date-begin=" . $datetimebegin . "&date-end=" . $datetimeend . "&url-path=&session=" . $session;
+				"&summary=summary&folder-id=" . $scoid . "&date-begin=" . $datetimebegin . "&date-end=" . $datetimeend . "&url-path=&session=" . $session;
 
 	$xmlstr = file_get_contents($url);
 	$xml = new SimpleXMLElement($xmlstr);

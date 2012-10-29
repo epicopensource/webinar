@@ -92,6 +92,8 @@ if ($d and $confirm) {
 $customfields = webinar_get_session_customfields();
 
 $mform = new mod_webinar_session_form(null, compact('id', 'f', 's', 'c', 'nbdays', 'customfields', 'course'));
+//$mform = new mod_webinar_session_form(null, array('webinar'=> $webinar), compact('id', 'f', 's', 'c', 'nbdays', 'customfields', 'course'));
+
 if ($mform->is_cancelled()){
     redirect($returnurl);
 }

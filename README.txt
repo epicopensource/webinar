@@ -47,7 +47,7 @@ registering users on webinar sessions and joining sessions. Only when the studen
 on Join Session do they leave Moodle and view the webinar in the Adobe Connect Player 
 window. Upon exiting the webinar session they will be returned to the Moodle course page.
 
-It has been tested using Adobe Connect Pro 8 hosted accounts, using the Adobe Connect 
+It has been tested using Adobe Connect Pro 8 (and 9) hosted accounts, using the Adobe Connect 
 Web Services API - see http://help.adobe.com/en_US/connect/8.0/webservices/index.html.
 
 Requirements

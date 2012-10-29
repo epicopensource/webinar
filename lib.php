@@ -3799,3 +3799,10 @@ function webinar_add_customfields_to_form(&$mform, $customfields, $alloptional=f
         }
     }
 }
+
+function webinar_supports($feature) {
+    switch($feature) {
+        case FEATURE_BACKUP_MOODLE2:          return true;
+        default: return null;
+    }
+}

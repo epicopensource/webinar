@@ -24,25 +24,120 @@ class mod_webinar_session_form extends moodleform {
         $customfields = $this->_customdata['customfields'];
         webinar_add_customfields_to_form($mform, $customfields);
 
-		//Build dropdown of users from which a presenter for the session will be selected
-		//Populate with users who have been assigned a host/presenter role
-		//Host/Presenter role takes Moodle users who have been assigned a teacher or non-editing teacher role
-		$presenters = $DB->get_records_sql("SELECT
-                        u.id,
-                        u.firstname,
-                        u.lastname
-                    FROM 
-						{$CFG->prefix}user u, 
-						{$CFG->prefix}role r, 
-                        {$CFG->prefix}role_assignments ra
-                    WHERE 
-						(r.archetype = 'teacher' OR r.archetype = 'editingteacher')
-					AND
-						ra.roleid = r.id
-					AND
-						ra.userid = u.id
-					ORDER BY u.firstname ASC, u.lastname ASC");
+		/*
+		// Build dropdown of users from which a presenter for the session will be selected
+		// Populate with users who have been assigned a host/presenter role
+		// Host/Presenter role takes Moodle users who have been assigned a teacher or non-editing teacher role
+		// NOTE: for single host license Adobe Connect accounts, the selected host must be the Adobe Connect account holder 
+		// (and be registered under the same email address)
+		*/
+		
+		// JoeB change 29/10/2012 - get webinar details
+		$hosts_limit = 0;
+		
+		if($this->_customdata['f']) {
+			$webinar = $DB->get_record('webinar', array('id' => $this->_customdata['f']));
+			//print_r($webinar);
+			
+			$url = $webinar->sitexmlapiurl . "?action=common-info";
+			$xmlstr = file_get_contents($url);
+			$xml = new SimpleXMLElement($xmlstr);
+			$session = $xml->common->cookie;
+
+			foreach($xml->common->account->attributes() as $key => $val) {
+				if($key == 'account-id') {
+					$account_id = $val;
+				}
+			}
+
+			//Step 2 - login
+			$url = $webinar->sitexmlapiurl . "?action=login&login=" . $webinar->adminemail . "&password=" . $webinar->adminpassword . "&session=" . $session;
+			$xmlstr = file_get_contents($url);
+			$xml = new SimpleXMLElement($xmlstr);
+			//print_r($xml);
+			
+			/* capture the number of hosts allowed for this Adobe Connect account */
+			$url = $webinar->sitexmlapiurl . "?action=principal-list&session=" . $session;
+			$xmlstr = file_get_contents($url);
+			$xml = new SimpleXMLElement($xmlstr);
+
+			$p_array_count = 0;
+			foreach($xml->{'principal-list'}->principal as $principal_array) {
+
+				$principal = $principal_array; //$principal_array[$p_array_count];
 				
+				foreach($principal->name as $key => $val) {
+					if ($val == 'Meeting Hosts') {
+						foreach($principal->attributes() as $akey => $aval) {
+
+							if($akey == 'principal-id') {
+								$principal_id = $aval;
+							}
+						}
+					}
+				}
+				$p_array_count++;
+			}
+			
+			$url = $webinar->sitexmlapiurl . "?action=report-quotas&session=" . $session;
+			$xmlstr = file_get_contents($url);
+			$xml = new SimpleXMLElement($xmlstr);
+			
+			$q_array_count = 0;
+			$found_limit = false;
+			foreach($xml->{'report-quotas'}->quota as $quota_array) {
+			
+				$quota = $quota_array; //$quota_array[$q_array_count];
+			
+				foreach($quota->attributes() as $key => $val) {
+					if($key == 'acl-id') {
+						
+						if((int)$val == (int)$principal_id) {
+							$found_limit = true;
+						}
+					}
+					if($found_limit) {
+						if($key == 'limit') {
+							$hosts_limit = $val;
+							break;
+						}
+					}
+				}
+				$q_array_count++;
+			}
+		}
+		
+		if ($hosts_limit == 1) {
+			//the only presenter that can be selected is a user with the same email address as the one registered on the Adobe Connect account
+			$presenters = $DB->get_records_sql("SELECT
+							u.id,
+							u.firstname,
+							u.lastname
+						FROM 
+							{$CFG->prefix}user u
+						WHERE 
+							u.email = '" . $webinar->adminemail . "'
+						ORDER BY u.firstname ASC, u.lastname ASC");
+		}
+		else {
+			$presenters = $DB->get_records_sql("SELECT
+							u.id,
+							u.firstname,
+							u.lastname
+						FROM 
+							{$CFG->prefix}user u, 
+							{$CFG->prefix}role r, 
+							{$CFG->prefix}role_assignments ra
+						WHERE 
+							(r.archetype = 'teacher' OR r.archetype = 'editingteacher')
+						AND
+							ra.roleid = r.id
+						AND
+							ra.userid = u.id
+						ORDER BY u.firstname ASC, u.lastname ASC");
+		}
+		/* end JoeB changes */
+
 		$presenters_select = array();		
 		$presenters_select[] = get_string('selecthost', 'webinar'); 		
 				
