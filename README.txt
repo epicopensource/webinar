@@ -53,7 +53,7 @@ Web Services API - see http://help.adobe.com/en_US/connect/8.0/webservices/index
 Requirements
 -------------
 
-* Moodle 2.3
+* Moodle 2.2 - 2.4
 * An Adobe Connect account - register for a 30-day free trial at 
 http://www.adobe.com/uk/products/acrobatconnectpro/trial/
 * All users attending session will be required to have Flash Player 10.1 or higher, 
