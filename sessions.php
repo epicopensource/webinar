@@ -62,7 +62,7 @@ else {
 
 require_course_login($course);
 $errorstr = '';
-$context = get_context_instance(CONTEXT_COURSE, $course->id);
+$context = context_course::instance($course->id, CONTEXT_COURSE); //get_context_instance(CONTEXT_COURSE, $course->id);
 require_capability('mod/webinar:editsessions', $context);
 
 $returnurl = "view.php?f=$webinar->id";
@@ -256,6 +256,7 @@ $navlinks[] = array('name' => get_string('modulenameplural', 'webinar'), 'link' 
 $navlinks[] = array('name' => $pagetitle, 'link' => "view.php?f=$webinar->id", 'type' => 'activityinstance');
 $navlinks[] = array('name' => $heading, 'link' => '', 'type' => 'title');
 $navigation = build_navigation($navlinks);
+
 /*print_header_simple($pagetitle, '', $navigation, '', '', true,
                     update_module_button($cm->id, $course->id, get_string('modulename', 'webinar')), navmenu($course, $cm));*/
 $PAGE->set_pagetype('webinar');

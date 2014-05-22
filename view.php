@@ -36,7 +36,8 @@ else {
     print_error('error:mustspecifycoursemodulewebinar', 'webinar');
 }
 
-$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+//$context = get_context_instance(CONTEXT_MODULE, $cm->id);
+$context = context_module::instance($cm->id);
 
 if (!empty($download)) {
     require_capability('mod/webinar:viewattendees', $context);
@@ -64,18 +65,24 @@ $OUTPUT->box_start();
 
 echo $OUTPUT->heading($webinar->name);
 
-echo '<table align="center">
-<tr>
-<td valign="top">Description:</td>
-<td width="20px">&nbsp;</td>
-<td valign="top">' . $webinar->description . '</td>
-</tr>
-<tr>
-<td valign="top">Agenda:</td>
-<td width="20px">&nbsp;</td>
-<td valign="top">' . $webinar->agenda . '</td>
-</tr>
-</table>';
+echo '<table align="center">';
+
+if ($webinar->description !== "") {
+    echo '<tr>
+        <td valign="top">Description:</td>
+        <td width="20px">&nbsp;</td>
+        <td valign="top">' . $webinar->description . '</td>
+        </tr>';
+}
+if ($webinar->agenda !== "") {
+    echo '<tr>
+        <td valign="top">Agenda:</td>
+        <td width="20px">&nbsp;</td>
+        <td valign="top">' . $webinar->agenda . '</td>
+        </tr>';
+}
+
+echo '</table>';
 
 $locations = get_locations($webinar->id);
 if (count($locations) > 2) {
@@ -101,7 +108,9 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 
     $timenow = time();
 
-    $context = get_context_instance(CONTEXT_COURSE, $courseid, $USER->id);
+    //$context = get_context_instance(CONTEXT_COURSE, $courseid, $USER->id);
+    $context = context_course::instance($courseid, $USER->id);
+
     $viewattendees = has_capability('mod/webinar:viewattendees', $context);
 	
     $editsessions = has_capability('mod/webinar:editsessions', $context);
@@ -226,6 +235,7 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 
             $sessionrow[] = $status;
 
+            /*
 			//Get session value
 			$url = $webinar->sitexmlapiurl . "?action=common-info";
 			$xmlstr = file_get_contents($url);
@@ -236,9 +246,37 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 			$url = $webinar->sitexmlapiurl . "?action=login&login=" . $USER->email . "&password=" . $webinar->adminpassword . "&session=" . $session_value;
 			$xmlstr = file_get_contents($url);
 			$xml = new SimpleXMLElement($xmlstr);
+            */
+
+            $url = $webinar->sitexmlapiurl . "?action=login&login=" . $USER->email . "&password=" . $webinar->adminpassword;
+
+            $ch=curl_init($url);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HEADER, 1);
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $breeze_session_first_strip = strstr($response, 'BREEZESESSION');
+            $breeze_session_second_strip = strstr($breeze_session_first_strip, ';', true);
+            $breeze_session = str_replace('BREEZESESSION=', '', $breeze_session_second_strip);
+
+            // Create a stream for HTTP headers, including the BREEZESESSION cookie
+            $opts = array(
+              'http'=>array(
+                'method'=>"GET",
+                'header'=>"Cookie: " . $breeze_session_second_strip . "\r\n"
+              )
+            );
+
+            $context = stream_context_create($opts);
+
+
+
+
 
 			$meetingurl = str_replace('/api/xml', '', $webinar->sitexmlapiurl) . $session->urlpath;
-			$meetingurlwithsession = $meetingurl . '?session=' . $session_value;
+			$meetingurlwithsession = $meetingurl . '?session=' . $breeze_session; //$session_value;
 			
             // Options
             $options = '';
@@ -251,7 +289,7 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
                     . '<img src="'.$CFG->wwwroot.'/pix/t/delete.gif" class="iconsmall" alt="'.get_string('delete').'" /></a><br />';
             }
             if ($viewattendees){
-                $options .= '<a href="attendees.php?s='.$session->id.'&amp;backtoallsessions='.$webinarid.'" title="'.get_string('seeattendees', 'webinar').'">'.get_string('attendees', 'webinar').'</a><br />';
+                $options .= '<br/><a href="attendees.php?s='.$session->id.'&amp;backtoallsessions='.$webinarid.'" title="'.get_string('seeattendees', 'webinar').'">'.get_string('attendees', 'webinar').'</a><br />';
             }
 			
 			if($status == 'Closed') {
@@ -260,12 +298,36 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 				//To do this, we must first get their principal ID if they are already added to Adobe Connect, or if not, add them first
 				//Need to temporarily login as admin in order to do this
 				
-				$url = $webinar->sitexmlapiurl . "?action=login&login=" . $webinar->adminemail . "&password=" . $webinar->adminpassword . "&session=" . $session_value;
+				/*
+                $url = $webinar->sitexmlapiurl . "?action=login&login=" . $webinar->adminemail . "&password=" . $webinar->adminpassword . "&session=" . $session_value;
 				$xmlstr = file_get_contents($url);
 				$xml = new SimpleXMLElement($xmlstr);
+                */
 
-				$url = $webinar->sitexmlapiurl . "?action=principal-list&filter-email=" . $USER->email . "&session=" . $session_value;
-				$xmlstr = file_get_contents($url);
+                $url = $webinar->sitexmlapiurl . "?action=login&login=" . $webinar->adminemail . "&password=" . $webinar->adminpassword;
+                $ch=curl_init($url);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HEADER, 1);
+                $response = curl_exec($ch);
+                curl_close($ch);
+
+                $breeze_session_first_strip = strstr($response, 'BREEZESESSION');
+                $breeze_session_second_strip = strstr($breeze_session_first_strip, ';', true);
+                $breeze_session = str_replace('BREEZESESSION=', '', $breeze_session_second_strip);
+
+                // Create a stream for HTTP headers, including the BREEZESESSION cookie
+                $opts = array(
+                  'http'=>array(
+                    'method'=>"GET",
+                    'header'=>"Cookie: " . $breeze_session_second_strip . "\r\n"
+                  )
+                );
+
+                $context = stream_context_create($opts);
+
+				$url = $webinar->sitexmlapiurl . "?action=principal-list&filter-email=" . $USER->email; //. "&session=" . $session_value;
+				$xmlstr = file_get_contents($url, false, $context);
 				$xml = new SimpleXMLElement($xmlstr);
 
 				if ($xml->{'principal-list'}->principal) {
@@ -279,9 +341,9 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 				else {
 					//User email address is not registered yet with Adobe Connect - add them and get back the principal ID
 					$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . str_replace(' ', '%20', $USER->firstname) . "&last-name=" . str_replace(' ', '%20', $USER->lastname) . "&login=" . $USER->email . 
-						"&password=" . $webinar->adminpassword . "&type=user&send-email=false&has-children=0&email=" . $USER->email . "&session=" . $session_value;
+						"&password=" . $webinar->adminpassword . "&type=user&send-email=false&has-children=0&email=" . $USER->email; // . "&session=" . $session_value;
 						
-					$xmlstr = file_get_contents($url);
+					$xmlstr = file_get_contents($url, false, $context);
 					$xml = new SimpleXMLElement($xmlstr);
 
 					foreach($xml->principal->attributes() as $key => $val) {
@@ -292,25 +354,49 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 				}
 				
 				//Now, add user as a meeting participant using the principalID obtained above
-				$url = $webinar->sitexmlapiurl . "?action=permissions-update&principal-id=" . $principal_id . "&acl-id=" . $session->scoid . "&permission-id=view&session=" . $session_value;
-				$xmlstr = file_get_contents($url);
+				$url = $webinar->sitexmlapiurl . "?action=permissions-update&principal-id=" . $principal_id . "&acl-id=" . $session->scoid . "&permission-id=view&session=" . $breeze_session; //$session_value;
+				$xmlstr = file_get_contents($url, false, $context);
 				$xml = new SimpleXMLElement($xmlstr);
 				
 				//Login BACK in as user, after having logged in as admin to add current user as participant
-				$url = $webinar->sitexmlapiurl . "?action=login&login=" . $USER->email . "&password=" . $webinar->adminpassword . "&session=" . $session_value;
+				/*
+                $url = $webinar->sitexmlapiurl . "?action=login&login=" . $USER->email . "&password=" . $webinar->adminpassword . "&session=" . $session_value;
 				$xmlstr = file_get_contents($url);
 				$xml = new SimpleXMLElement($xmlstr);
-				
+                */
+
+                $url = $webinar->sitexmlapiurl . "?action=login&login=" . $USER->email . "&password=" . $webinar->adminpassword;
+                $ch=curl_init($url);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HEADER, 1);
+                $response = curl_exec($ch);
+                curl_close($ch);
+
+                $breeze_session_first_strip = strstr($response, 'BREEZESESSION');
+                $breeze_session_second_strip = strstr($breeze_session_first_strip, ';', true);
+                $breeze_session = str_replace('BREEZESESSION=', '', $breeze_session_second_strip);
+
+                // Create a stream for HTTP headers, including the BREEZESESSION cookie
+                $opts = array(
+                  'http'=>array(
+                    'method'=>"GET",
+                    'header'=>"Cookie: " . $breeze_session_second_strip . "\r\n"
+                  )
+                );
+
+                $context = stream_context_create($opts);
+
 				//get back the recording URL path for the meeting SCO ID
-				$url = $webinar->sitexmlapiurl . "?action=sco-contents&sco-id=" . $session->scoid . "&filter-icon=archive&session=" . $session_value;
-				$xmlstr = file_get_contents($url);
+				$url = $webinar->sitexmlapiurl . "?action=sco-contents&sco-id=" . $session->scoid . "&filter-icon=archive"; //&session=" . $session_value;
+				$xmlstr = file_get_contents($url, false, $context);
 				$xml = new SimpleXMLElement($xmlstr);
 				
 				foreach ($xml->scos->sco as $sco) {
 				
 					$recording_urlpath = $sco->{'url-path'};
 					$recordingurl = str_replace('/api/xml', '', $webinar->sitexmlapiurl) . $recording_urlpath;
-					$recordingurlwithsession = $recordingurl . '?session=' . $session_value;
+					$recordingurlwithsession = $recordingurl . '?session=' . $breeze_session; //$session_value;
 					
 					$options .= '<a href="'. $recordingurlwithsession .'" title="'.get_string('viewrecording', 'webinar').'" onClick="javascript:window.open(\'' . $recordingurlwithsession . '\', \'Breeze\', \'toolbar=no,menubar=no,width=1024,height=768,resizable=yes\'); return false">' . get_string('viewrecording', 'webinar') . '</a><br/>';
 				}
@@ -318,7 +404,7 @@ function print_session_list($courseid, $webinarid, $location, $webinar)
 
 			//check if the user is the presenter/host of the session - if so, allow them to join the session as host as they are already registered with Adobe Connect
 			if (($session->presenter == $USER->id) and (!$sessionstarted)) {
-				$options .= '<a href="'. $meetingurlwithsession .'" title="'.get_string('joinwebinarashost', 'webinar').'" onClick="javascript:window.open(\'' . $meetingurlwithsession . '\', \'Breeze\', \'toolbar=no,menubar=no,width=1024,height=768,resizable=yes\'); return false">' . get_string('joinwebinarashost', 'webinar') . '</a>';
+				$options .= '<a href="'. $meetingurlwithsession .'" title="'.get_string('joinwebinarashost', 'webinar').'" onClick="javascript:window.open(\'' . $meetingurlwithsession . '\', \'Breeze\', \'toolbar=no,menubar=no,width=1024,height=768,resizable=yes\'); return false">' . get_string('joinwebinarashost', 'webinar') . '</a><br/>';
 				$ishost = true;
 			}
 			else {

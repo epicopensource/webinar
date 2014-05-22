@@ -22,7 +22,9 @@ Summary
 ------------
 
 This is an activity module for web conferencing which enables Adobe Connect webinar 
-sessions to be added as an activity to any course.
+sessions to be added as an activity to any course. 
+
+UPDATE May 2014: this has been updated for Moodle 2.6, and bugs fixed that previously prevented use on Adobe Connect 9.
 
 Description
 ------------
@@ -47,15 +49,15 @@ registering users on webinar sessions and joining sessions. Only when the studen
 on Join Session do they leave Moodle and view the webinar in the Adobe Connect Player 
 window. Upon exiting the webinar session they will be returned to the Moodle course page.
 
-It has been tested using Adobe Connect Pro 8 (and 9) hosted accounts, using the Adobe Connect 
-Web Services API - see http://help.adobe.com/en_US/connect/8.0/webservices/index.html.
+It has been tested using Adobe Connect Pro 9 hosted accounts, using the Adobe Connect 
+Web Services API - see http://help.adobe.com/en_US/connect/9.0/webservices/index.html.
 
 Requirements
 -------------
 
-* Moodle 2.2 - 2.4
+* Moodle 2.6
 * An Adobe Connect account - register for a 30-day free trial at 
-http://www.adobe.com/uk/products/acrobatconnectpro/trial/
+http://www.adobe.com/cfusion/adobeconnect/index.cfm?event=trial
 * All users attending session will be required to have Flash Player 10.1 or higher, 
 with the ability to install Adobe Connect Add-Ins in order to share their screen.
 
@@ -76,8 +78,8 @@ Bugs/patches
 
 Feel free to send bug reports (and/or patches!) to the current maintainer:
 
-  Mark Aberdour (mark.aberdour@epic.co.uk)
-  Joe Barber (joe.barber@epic.co.uk)
+  Mark Aberdour (maberdour@epiclearninggroup.com)
+  Joe Barber (jbarber@epiclearninggroup.com)
 
 Changes
 -------------

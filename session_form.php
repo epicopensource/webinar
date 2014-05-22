@@ -9,7 +9,7 @@ class mod_webinar_session_form extends moodleform {
 
     function definition()
     {
-        global $CFG, $DB;
+        global $CFG, $DB; 
 
         $mform =& $this->_form;
 
@@ -31,34 +31,47 @@ class mod_webinar_session_form extends moodleform {
 		// NOTE: for single host license Adobe Connect accounts, the selected host must be the Adobe Connect account holder 
 		// (and be registered under the same email address)
 		*/
-		
-		// JoeB change 29/10/2012 - get webinar details
+
 		$hosts_limit = 0;
 		
 		if($this->_customdata['f']) {
+
 			$webinar = $DB->get_record('webinar', array('id' => $this->_customdata['f']));
-			//print_r($webinar);
-			
-			$url = $webinar->sitexmlapiurl . "?action=common-info";
-			$xmlstr = file_get_contents($url);
-			$xml = new SimpleXMLElement($xmlstr);
-			$session = $xml->common->cookie;
 
-			foreach($xml->common->account->attributes() as $key => $val) {
-				if($key == 'account-id') {
-					$account_id = $val;
-				}
-			}
+			/* JoeB 10/03/2014 - AC9 approach below */
 
-			//Step 2 - login
-			$url = $webinar->sitexmlapiurl . "?action=login&login=" . $webinar->adminemail . "&password=" . $webinar->adminpassword . "&session=" . $session;
-			$xmlstr = file_get_contents($url);
-			$xml = new SimpleXMLElement($xmlstr);
-			//print_r($xml);
+			$url = $webinar->sitexmlapiurl . "?action=login&login=" . $webinar->adminemail . "&password=" . $webinar->adminpassword;
 			
-			/* capture the number of hosts allowed for this Adobe Connect account */
-			$url = $webinar->sitexmlapiurl . "?action=principal-list&session=" . $session;
-			$xmlstr = file_get_contents($url);
+			$ch=curl_init($url);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_HEADER, 1);
+			$response = curl_exec($ch);
+			curl_close($ch);
+			
+
+			//$response = file_get_contents($url);
+			//$response = new SimpleXMLElement($response);
+			//print_r($response);
+			
+			$breeze_session_first_strip = strstr($response, 'BREEZESESSION');
+			$breeze_session_second_strip = strstr($breeze_session_first_strip, ';', true);
+			$breeze_session = str_replace('BREEZESESSION=', '', $breeze_session_second_strip);
+
+			// Create a stream for HTTP headers, including the BREEZESESSION cookie
+			$opts = array(
+			  'http'=>array(
+			    'method'=>"GET",
+			    'header'=>"Cookie: " . $breeze_session_second_strip . "\r\n"
+			  )
+			);
+
+			$context = stream_context_create($opts);
+
+			// capture the number of hosts allowed for this Adobe Connect account 
+			$url = $webinar->sitexmlapiurl . "?action=principal-list"; 
+
+			$xmlstr = file_get_contents($url, false, $context);
 			$xml = new SimpleXMLElement($xmlstr);
 
 			$p_array_count = 0;
@@ -78,9 +91,10 @@ class mod_webinar_session_form extends moodleform {
 				}
 				$p_array_count++;
 			}
+
 			
-			$url = $webinar->sitexmlapiurl . "?action=report-quotas&session=" . $session;
-			$xmlstr = file_get_contents($url);
+			$url = $webinar->sitexmlapiurl . "?action=report-quotas";
+			$xmlstr = file_get_contents($url, false, $context);
 			$xml = new SimpleXMLElement($xmlstr);
 			
 			$q_array_count = 0;
@@ -136,7 +150,6 @@ class mod_webinar_session_form extends moodleform {
 							ra.userid = u.id
 						ORDER BY u.firstname ASC, u.lastname ASC");
 		}
-		/* end JoeB changes */
 
 		$presenters_select = array();		
 		$presenters_select[] = get_string('selecthost', 'webinar'); 		
@@ -146,7 +159,7 @@ class mod_webinar_session_form extends moodleform {
 				$presenters_select[$presenter->id] = $presenter->firstname . " " . $presenter->lastname;
 			}
 		}
-		
+
 		$mform->addElement('select', 'presenter', get_string('presenter', 'webinar'), $presenters_select);
 		$mform->addRule('presenter', null, 'required', null, 'client');
 		$mform->setDefault('presenter', '');
@@ -155,7 +168,6 @@ class mod_webinar_session_form extends moodleform {
         $mform->addRule('capacity', null, 'required', null, 'client');
         $mform->setType('capacity', PARAM_INT);
         $mform->setDefault('capacity', 10);
-        //$mform->setHelpButton('capacity', array('capacity', get_string('capacity', 'webinar'), 'webinar'));
 		
 		$mform->addElement('date_time_selector', 'timestart', get_string('startdatetime', 'webinar'));
 		$mform->setType('timestart', PARAM_INT);

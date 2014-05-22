@@ -189,21 +189,50 @@ if ($attendees = webinar_get_attendees($session->id)) {
 		else if (time() >= $timefinish) {
 			//compare the finish time to the current time - if the webinar has now finished, print out the attendance report
 			
+            /*
 			//Step 1 - get session value
 			$url = $webinar->sitexmlapiurl . "?action=common-info";
 			$xmlstr = file_get_contents($url);
 			$xml = new SimpleXMLElement($xmlstr);
 			//print_r($xml);
 			$session_value = $xml->common->cookie;
+            */
 
 			//Step 2 - login
+            /*
 			$url = $webinar->sitexmlapiurl . "?action=login&login=" . $webinar->adminemail . "&password=" . $webinar->adminpassword . "&session=" . $session_value;
 			$xmlstr = file_get_contents($url);
 			$xml = new SimpleXMLElement($xmlstr);
 			//print_r($xml);
+            */
 
-			$url = $webinar->sitexmlapiurl . "?action=principal-list&filter-email=" . $attendee->email . "&session=" . $session_value;
-			$xmlstr = file_get_contents($url);
+            $url = $webinar->sitexmlapiurl . "?action=login&login=" . $webinar->adminemail . "&password=" . $webinar->adminpassword;
+
+            $ch=curl_init($url);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_HEADER, 1);
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $breeze_session_first_strip = strstr($response, 'BREEZESESSION');
+            $breeze_session_second_strip = strstr($breeze_session_first_strip, ';', true);
+            $breeze_session = str_replace('BREEZESESSION=', '', $breeze_session_second_strip);
+
+            // Create a stream for HTTP headers, including the BREEZESESSION cookie
+            $opts = array(
+                      'http'=>array(
+                        'method'=>"GET",
+                        'header'=>"Cookie: " . $breeze_session_second_strip . "\r\n"
+                      )
+            );
+
+            $context = stream_context_create($opts);
+
+
+
+			$url = $webinar->sitexmlapiurl . "?action=principal-list&filter-email=" . $attendee->email; // . "&session=" . $session_value;
+			$xmlstr = file_get_contents($url, false, $context);
 			$xml = new SimpleXMLElement($xmlstr);
 			//print_r($xml);
 			
@@ -216,11 +245,11 @@ if ($attendees = webinar_get_attendees($session->id)) {
 			}
 
 			//Step 4 - get a report of if/when this user has accessed the course - process the XML to get their join and leave times for the webinar session
-			$url = $webinar->sitexmlapiurl . "?action=report-bulk-consolidated-transactions&filter-sco-id=" . $session->scoid . "&filter-principal-id=" . $principal_id . "&session=" . $session_value;
+			$url = $webinar->sitexmlapiurl . "?action=report-bulk-consolidated-transactions&filter-sco-id=" . $session->scoid . "&filter-principal-id=" . $principal_id; // . "&session=" . $session_value;
 			//echo $url;
 			//echo "<br/>";
 			
-			$xmlstr = file_get_contents($url);
+			$xmlstr = file_get_contents($url, false, $context);
 			$xml = new SimpleXMLElement($xmlstr);
 			//print_r($xml);
 			//echo "<br/><br/>";
