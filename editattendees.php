@@ -71,7 +71,7 @@ if ($frm = data_submitted()) {
             // Check if we are waitlisting or booking
              //if ($session->datetimeknown) {
               //      $status = WEBINAR_STATUS_BOOKED;
-            //} 
+            //}
 			//else {
                     $status = WEBINAR_STATUS_WAITLISTED;
            //}
@@ -84,7 +84,7 @@ if ($frm = data_submitted()) {
 			else {
 				//Sign up user to this webinar through Adobe Connect API call
 				signup_meeting($webinar, $session, $user);
-					
+
 				//Send registration email to user
 				send_email_signup($webinar, $session, $cm, $user);
 			}
@@ -115,12 +115,12 @@ if ($frm = data_submitted()) {
 
         // Update attendees
         webinar_update_attendees($session);
-		
+
 		$user = $DB->get_record('user', array('id' => $removeuser));
-		
+
 		//Unregister this user from this webinar through Adobe Connect API call
 		cancelsignup_meeting($webinar, $session, $user);
-		
+
 		//Send cancel registration email to user
 		send_email_cancelsignup($webinar, $session, $cm, $user);
     }
@@ -140,7 +140,7 @@ $navlinks[] = array('name' => get_string('addremoveattendees', 'webinar'), 'link
 $navigation = build_navigation($navlinks);
 /*print_header_simple($pagetitle, '', $navigation, '', '', true,
                     update_module_button($cm->id, $course->id, $strwebinar), navmenu($course, $cm));*/
-					
+
 $PAGE->set_pagetype('webinar');
 $PAGE->set_title($webinar->name);
 $PAGE->set_heading($webinar->name);
@@ -171,24 +171,24 @@ if ($searchtext !== '') {   // Search for a subset of remaining users
 
 /// All non-signed up system users
 
-$availableusers = $DB->get_recordset_sql('SELECT u.id, u.firstname, u.lastname, u.email 
-	FROM '.$CFG->prefix.'user u, '.$CFG->prefix.'enrol e, '.$CFG->prefix.'user_enrolments ue 
-	WHERE 
+$availableusers = $DB->get_recordset_sql('SELECT u.id, u.firstname, u.lastname, u.email
+	FROM '.$CFG->prefix.'user u, '.$CFG->prefix.'enrol e, '.$CFG->prefix.'user_enrolments ue
+	WHERE
 	e.courseid = '.$course->id.'
-	AND 
-	ue.enrolid = e.id 
-	AND 
-	u.id = ue.userid 
-	ORDER BY u.lastname ASC, u.firstname ASC');			  
-										  
+	AND
+	ue.enrolid = e.id
+	AND
+	u.id = ue.userid
+	ORDER BY u.lastname ASC, u.firstname ASC');
+
 $availablecount = $DB->get_recordset_sql('SELECT COUNT(u.id) AS avusers
-	FROM '.$CFG->prefix.'user u, '.$CFG->prefix.'enrol e, '.$CFG->prefix.'user_enrolments ue 
-	WHERE 
+	FROM '.$CFG->prefix.'user u, '.$CFG->prefix.'enrol e, '.$CFG->prefix.'user_enrolments ue
+	WHERE
 	e.courseid = '.$course->id.'
-	AND 
-	ue.enrolid = e.id 
-	AND 
-	u.id = ue.userid');		
+	AND
+	ue.enrolid = e.id
+	AND
+	u.id = ue.userid');
 
 foreach ($availablecount as $ac) {
 	$potential_users = $ac->avusers;
@@ -237,13 +237,13 @@ $table->width = '70%';
 if ($na_rs = $DB->get_recordset_sql($nonattendees_sql)) {
 	foreach ($na_rs as $record) {
 		$data[] = $record->firstname . ' ' . $record->lastname;
-		
+
 		$data[] = $record->email;
 		//$data[] = get_string('status_'.webinar_get_status($user->statuscode), 'webinar');
-		
+
 		$table->data[] = $data;
 	}
-	
+
 	$na_rs->close();
 }
 

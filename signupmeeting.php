@@ -47,13 +47,13 @@ function signup_meeting($webinar, $session_info, $user) {
 	$context = stream_context_create($opts);
 
 	//Step 3 - as admin user, check if user email exists on Adobe Connect already - if not, add a new user to the system, otherwise get their permission ID
-	
+
 	$url = $webinar->sitexmlapiurl . "?action=principal-list&filter-email=" . $user->email; // . "&session=" . $session;
 	$xmlstr = file_get_contents($url, false, $context);
 	$xml = new SimpleXMLElement($xmlstr);
 
 	if ($xml->{'principal-list'}->principal) {
-	
+
 		//User email address has been matched on Adobe Connect - get back their principal ID
 		foreach($xml->{'principal-list'}->principal->attributes() as $key => $val) {
 			if($key == 'principal-id') {
@@ -63,7 +63,7 @@ function signup_meeting($webinar, $session_info, $user) {
 	}
 	else {
 		//User email address is not registered yet with Adobe Connect - add them and get back the principal ID
-		$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . str_replace(' ', '%20', $user->firstname) . "&last-name=" . str_replace(' ', '%20', $user->lastname) . "&login=" . $user->email . 
+		$url = $webinar->sitexmlapiurl . "?action=principal-update&first-name=" . str_replace(' ', '%20', $user->firstname) . "&last-name=" . str_replace(' ', '%20', $user->lastname) . "&login=" . $user->email .
 			"&password=" . $webinar->adminpassword . "&type=user&send-email=false&has-children=0&email=" . $user->email; // . "&session=" . $session;
 		$xmlstr = file_get_contents($url, false, $context);
 		$xml = new SimpleXMLElement($xmlstr);
