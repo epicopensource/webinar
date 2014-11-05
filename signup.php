@@ -41,7 +41,7 @@ $navigation = build_navigation($navlinks);
 // Guests can't signup for a session, so offer them a choice of logging in or going back.
 if (isguestuser()) {
     $loginurl = $CFG->wwwroot.'/login/index.php';
-	
+
     if (!empty($CFG->loginhttps)) {
         $loginurl = str_replace('http:','https:', $loginurl);
     }
@@ -106,22 +106,22 @@ if ($fromform = $mform->get_data()) { // Form submitted
 
 		//Sign up user to this webinar through Adobe Connect API call
 		signup_meeting($webinar, $session, $USER);
-		
+
 		//Send registration email to user
 		send_email_signup($webinar, $session, $cm, $USER);
-		
+
 		$PAGE->set_pagetype('webinar');
 		$PAGE->set_title($webinar->name);
 		$PAGE->set_heading($webinar->name);
 		echo $OUTPUT->header();
-		
-		
+
+
 		$heading = get_string('registersuccess', 'webinar');
 		echo $OUTPUT->heading($heading);
-		
+
         $message = get_string('registrationsuccessful', 'webinar', $webinar->name);
         $timemessage = 4;
-		
+
 		$message = '<div style="height: 10px;">&nbsp;</div>' . $message;
         redirect($returnurl, $message, $timemessage);
     }

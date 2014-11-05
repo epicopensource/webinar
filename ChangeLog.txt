@@ -1,4 +1,4 @@
-
+2.1 (2014-05-22) - Panos Paralakis - Fixed WYSIWYG settings editors and added missing renderer file and logic
 2.0 (2014-05-22) - Moodle 2.6 release, support for Adobe Connect 9 added
 1.2 (2012-10-29) - Backup / restore functionality included, fixes made to enable single host Adobe Connect accounts
 1.1 (2012-08-21) - Portuguese/Brazilian translation provided by Herbert de Carvalho 

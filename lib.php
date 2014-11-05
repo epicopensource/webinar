@@ -256,11 +256,42 @@ function webinar_add_instance($webinar) {
 	global $DB;
 	
     $webinar->timemodified = time();
+    $cmid = $webinar->coursemodule;
+    $context = context_module::instance($cmid);
 
     webinar_fix_settings($webinar);
     if ($webinar->id = $DB->insert_record('webinar', $webinar)) {
         webinar_grade_item_update($webinar);
     }
+
+    if (!empty($webinar->description['itemid'])) {
+
+        $draftitemid = file_get_submitted_draft_itemid('description');
+
+        $file = file_save_draft_area_files($draftitemid, $context->id, 'mod_webinar', 'description', $webinar->id, webinar_get_editor_options($context), $webinar->description['text']);
+
+        $text = file_rewrite_pluginfile_urls($file, 'pluginfile.php',
+            $context->id, 'mod_webinar', 'description', $webinar->id);
+
+        $webinar->description = $text;
+
+        $DB->update_record('webinar', $webinar);
+    }
+
+    if (!empty($webinar->agenda['itemid'])) {
+
+        $draftitemid = file_get_submitted_draft_itemid('itemid');
+
+        $file = file_save_draft_area_files($draftitemid, $context->id, 'mod_webinar', 'agenda', $webinar->id, webinar_get_editor_options($context), $webinar->agenda['text']);
+
+        $text = file_rewrite_pluginfile_urls($file, 'pluginfile.php',
+            $context->id, 'mod_webinar', 'agenda', $webinar->id);
+
+        $webinar->agenda = $text;
+
+        $DB->update_record('webinar', $webinar);
+    }
+
     return $webinar->id;
 }
 
@@ -269,17 +300,52 @@ function webinar_add_instance($webinar) {
  * form in mod.html) this function will update an existing instance
  * with new data.
  */
-function webinar_update_instance($webinar) {
+function webinar_update_instance($webinar, $mform = null) {
 	global $DB;
 	
     $webinar->id = $webinar->instance;
+
+    $cmid = $webinar->coursemodule;
+    $context = context_module::instance($cmid);
 
     webinar_fix_settings($webinar);
     if ($return = $DB->update_record('webinar', $webinar)) {
         webinar_grade_item_update($webinar);
     }
+
+    if (is_array($webinar->description) && $webinar->description['itemid']!='') {
+
+        $draftitemid = file_get_submitted_draft_itemid('description');
+
+        $file = file_save_draft_area_files($draftitemid, $context->id, 'mod_webinar', 'description', $webinar->id, webinar_get_editor_options($context), $webinar->description['text']);
+
+        $text = file_rewrite_pluginfile_urls($file, 'pluginfile.php',
+            $context->id, 'mod_webinar', 'description', $webinar->id);
+
+        $webinar->description = $text;
+
+        $DB->update_record('webinar', $webinar);
+
+    }
+
+    if (is_array($webinar->agenda) && $webinar->agenda['itemid']!='') {
+
+        $draftitemid = file_get_submitted_draft_itemid('itemid');
+
+        $file = file_save_draft_area_files($draftitemid, $context->id, 'mod_webinar', 'agenda', $webinar->id, webinar_get_editor_options($context), $webinar->agenda['text']);
+
+        $text = file_rewrite_pluginfile_urls($file, 'pluginfile.php',
+            $context->id, 'mod_webinar', 'agenda', $webinar->id);
+
+        $webinar->agenda = $text;
+
+        $DB->update_record('webinar', $webinar);
+    }
+
+
     return $return;
 }
+
 
 /**
  * Given an ID of an instance of this module, this function will
@@ -709,7 +775,7 @@ function webinar_email_substitutions($msg, $webinarname, $reminderperiod, $user,
         $msg = str_replace($placeholder, $data, $msg);
     }
 	
-	$msg = str_replace('&pound;','£',$msg);
+	$msg = str_replace('&pound;','ï¿½',$msg);
 	
     return $msg;
 }
@@ -802,6 +868,7 @@ function webinar_get_sessions($webinarid, $location='')
 
     $fromclause = "FROM {$CFG->prefix}webinar_sessions s";
     $locationwhere = '';
+
     if (!empty($location)) {
         $fromclause = "FROM {$CFG->prefix}webinar_session_data d
                        JOIN {$CFG->prefix}webinar_sessions s ON s.id = d.sessionid";
@@ -3666,4 +3733,62 @@ function webinar_supports($feature) {
         case FEATURE_BACKUP_MOODLE2:          return true;
         default: return null;
     }
+}
+
+function webinar_get_editor_options($context) {
+
+    return array('subdirs'=>false,
+                    'maxfiles'=>EDITOR_UNLIMITED_FILES,
+                    'trusttext'=>false,
+                    'forcehttps' => false,
+                    'context'=>$context,
+                    'maxbytes' => 0,
+                    'changeformat' => 0,
+                    'noclean' => false);
+}
+
+function webinar_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+    // Check the contextlevel is as expected - if your plugin is a block, this becomes CONTEXT_BLOCK, etc.
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return false;
+    }
+
+    // Make sure the filearea is one of those used by the plugin.
+    if ($filearea !== 'description' && $filearea !== 'agenda') {
+        return false;
+    }
+
+    // Make sure the user is logged in and has access to the module (plugins that are not course modules should leave out the 'cm' part).
+    require_login($course, true, $cm);
+
+    // Check the relevant capabilities - these may vary depending on the filearea being accessed.
+    if (!has_capability('mod/webinar:view', $context)) {
+        return false;
+    }
+
+    // Leave this line out if you set the itemid to null in make_pluginfile_url (set $itemid to 0 instead).
+    $itemid = array_shift($args); // The first item in the $args array.
+
+    // Use the itemid to retrieve any relevant data records and perform any security checks to see if the
+    // user really does have access to the file in question.
+
+    // Extract the filename / filepath from the $args array.
+    $filename = array_pop($args); // The last item in the $args array.
+    if (!$args) {
+        $filepath = '/'; // $args is empty => the path is '/'
+    } else {
+        $filepath = '/'.implode('/', $args).'/'; // $args contains elements of the filepath
+    }
+
+    // Retrieve the file from the Files API.
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, 'mod_webinar', $filearea, $itemid, $filepath, $filename);
+    if (!$file) {
+        return false; // The file does not exist.
+    }
+
+    // We can now send the file back to the browser - in this case with a cache lifetime of 1 day and no filtering.
+    // From Moodle 2.3, use send_stored_file instead.
+    send_file($file, $filename);
+
 }
